@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мектеп олимпиадалары</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        nav {
+            background-color: #34495e;
+            padding: 10px 0;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        .event {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .event h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .event .date {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .event .location {
+            color: #3498db;
+        }
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        .add-event {
+            background-color: #27ae60;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .add-event:hover {
+            background-color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Мектеп олимпиадалары мен іс-шаралары</h1>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="#current">Ағымдағы іс-шаралар</a></li>
+            <li><a href="#future">Алдағы олимпиадалар</a></li>
+            <li><a href="#past">Өткен іс-шаралар</a></li>
+            <li><a href="#contact">Байланыс</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <h2 id="current">Ағымдағы іс-шаралар</h2>
+        
+        <div class="event">
+            <h3>Математика олимпиадасы</h3>
+            <p class="date">Күні: 15.11.2023</p>
+            <p class="location">Орны: ҚазҰУ, 203 аудитория</p>
+            <p>Қалалық математика олимпиадасы. 9-11 сынып оқушыларына арналған.</p>
+        </div>
+        
+        <div class="event">
+            <h3>Ағылшын тілі конкурсы</h3>
+            <p class="date">Күні: 20.11.2023</p>
+            <p class="location">Орны: Мектеп, 305 кабинет</p>
+            <p>Аудандық ағылшын тілі конкурсы. Қатысушыларға сертификаттар беріледі.</p>
+        </div>
+        
+        <h2 id="future">Алдағы олимпиадалар</h2>
+        
+        <div class="event">
+            <h3>Физика олимпиадасы</h3>
+            <p class="date">Күні: 05.12.2023</p>
+            <p class="location">Орны: НТШ, 101 аудитория</p>
+            <p>Республикалық физика олимпиадасы. Жеңімпаздарға бағалы жүлделер!</p>
+        </div>
+        
+        <div class="event">
+            <h3>Информатика марафоны</h3>
+            <p class="date">Күні: 15.12.2023</p>
+            <p class="location">Орны: IT университеті</p>
+            <p>24 сағаттық бағдарламалау марафоны. Командалық және жеке жарыс.</p>
+        </div>
+        
+        <h2 id="past">Өткен іс-шаралар</h2>
+        
+        <div class="event">
+            <h3>Химия олимпиадасы</h3>
+            <p class="date">Күні: 10.10.2023</p>
+            <p class="location">Орны: Мектеп химия кабинеті</p>
+            <p>Мектепіміздің командасы 1-орын алды!</p>
+        </div>
+        
+        <a href="#" class="add-event">Жаңа іс-шара қосу</a>
+        
+        <h2 id="contact">Байланыс</h2>
+        <p>Қосымша ақпарат алу үшін:</p>
+        <p>Email: olimpiada@mektep.kz</p>
+        <p>Телефон: +7 777 123 45 67</p>
+    </div>
+    
+    <footer>
+        <p>&copy; 2023 Мектеп олимпиадалары. Барлық құқықтар қорғалған.</p>
+    </footer>
+</body>
+</html>
