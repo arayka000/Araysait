@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Оқушының бағалау парағы - Векторлық графика</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #fff9e6;
+      --card-bg: #ffffff;
+      --text-color: #111111;
+      --border-color: #000000;
+      --primary: #ffeb3b;
+      --secondary: #4fc3f7;
+      --accent: #ff80ab;
+      --green: #aeea00;
+      --shadow: 4px 4px 0px #000000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #1a1a1a;
+        --card-bg: #2d2d2d;
+        --text-color: #f0f0f0;
+        --border-color: #ffffff;
+        --primary: #fbc02d;
+        --secondary: #0288d1;
+        --accent: #c2185b;
+        --green: #689f38;
+        --shadow: 4px 4px 0px #ffffff;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 700px;
+      width: 100%;
+      background: var(--card-bg);
+      border: 3px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 40px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      border-bottom: 3px solid var(--border-color);
+      padding-bottom: 15px;
+      margin-bottom: 20px;
+    }
+
+    .mascot {
+      font-size: 40px;
+      background: var(--primary);
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 2px 2px 0px var(--border-color);
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    p.subtitle {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--card-bg);
+      color: var(--text-color);
+      font-size: 15px;
+      box-shadow: 2px 2px 0px var(--border-color);
+    }
+
+    textarea {
+      resize: vertical;
+      height: 80px;
+    }
+
+    .criteria-section {
+      margin-top: 20px;
+    }
+
+    .category-title {
+      background: var(--secondary);
+      color: #000;
+      padding: 8px 12px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-weight: 700;
+      margin-top: 15px;
+      margin-bottom: 10px;
+      box-shadow: 2px 2px 0px var(--border-color);
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+      background: rgba(0,0,0,0.02);
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px dashed var(--border-color);
+    }
+
+    .checkbox-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      margin-top: 2px;
+    }
+
+    .score-board {
+      background: var(--primary);
+      color: #000;
+      border: 3px solid var(--border-color);
+      border-radius: 12px;
+      padding: 15px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+
+    .score-val {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .badge {
+      padding: 6px 12px;
+      border: 2px solid #000;
+      border-radius: 20px;
+      font-weight: 700;
+      background: #fff;
+      color: #000;
+    }
+
+    .btn {
+      width: 100%;
+      background: var(--green);
+      color: #000;
+      border: 3px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      margin-top: 20px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px var(--border-color);
+    }
+
+    .status-msg {
+      text-align: center;
+      margin-top: 12px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="mascot">🖱️</div>
+      <div>
+        <h1>Бағалау критерийлері парағы</h1>
+        <p class="subtitle">ОМ: 6.2.2.1 | Тақырып: «Векторлық графикалық редактор»</p>
+      </div>
+    </div>
+
+    <form id="studentForm">
+      <div class="form-group">
+        <label for="name">Аты-жөніңіз:</label>
+        <input type="text" id="name" required placeholder="Мысалы: Әлижан Серікұлы">
+      </div>
+
+      <div class="form-group">
+        <label for="studentClass">Сыныбыңыз:</label>
+        <input type="text" id="studentClass" required placeholder="Мысалы: 6 «А»">
+      </div>
+
+      <div class="criteria-section">
+        <div class="category-title">1. Жұптық жұмыс «Дизайн студиясына тапсырыс»</div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c1"><label for="c1">Мектеп логотипіне тиімді графика түрін таңдайды</label></div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c2"><label for="c2">Табиғат фотосуретіне тиімді графика түрін таңдайды</label></div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c3"><label for="c3">Қауіпсіздік белгісіне тиімді графика түрін таңдайды</label></div>
+
+        <div class="category-title">2. Жеке жұмыс, 1-тапсырма</div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c4"><label for="c4">Төрт тұжырымның дұрыс немесе қате екенін анықтайды</label></div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c5"><label for="c5">Қате тұжырымдардың бірін дұрыс түзетеді</label></div>
+
+        <div class="category-title">3. Жеке жұмыс, 2-тапсырма</div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c6"><label for="c6">Логотип пен фотосуретке тиімді графика түрін таңдап, себебін түсіндіреді</label></div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c7"><label for="c7">Кейіпкерлердің жұмысындағы әділдік пен жауапкершіліктің көрінісін анықтайды</label></div>
+
+        <div class="category-title">4. Жеке жұмыс, 3-тапсырма</div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c8"><label for="c8">Кемінде 3 пішін мен 2–3 түсті қолданып, логотип эскизін жасайды</label></div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c9"><label for="c9">Векторлық графиканы таңдау себебін түсіндіреді</label></div>
+
+        <div class="category-title">5. Бекіту «Дұрыс–бұрыс»</div>
+        <div class="checkbox-item"><input type="checkbox" value="1" id="c10"><label for="c10">Дұрыс жауап беріп, қысқаша дәлел келтіреді</label></div>
+      </div>
+
+      <div class="score-board">
+        <div>
+          <div>Жиынтық балл:</div>
+          <div class="score-val" id="totalScore">0 / 10</div>
+        </div>
+        <div>
+          <div>Деңгей:</div>
+          <div class="badge" id="levelBadge">Төмен</div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 20px;">
+        <label for="reflection1">Бүгінгі жетістігім:</label>
+        <textarea id="reflection1" placeholder="Бүгін не үйрендім, не сәтті шықты?"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="reflection2">Даму қадамым:</label>
+        <textarea id="reflection2" placeholder="Қандай қиындықтар туындады, нені жетілдіру керек?"></textarea>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">Мұғалімге жіберу 🚀</button>
+      <div class="status-msg" id="statusMsg"></div>
+    </form>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "BURADA_APPS_SCRIPT_URL_BOLADY"; // Өз Google Apps Script веб-сілтемеңізді жазыңыз
+
+    const checkboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
+    const totalScoreEl = document.getElementById('totalScore');
+    const levelBadge = document.getElementById('levelBadge');
+
+    function updateScore() {
+      let score = 0;
+      checkboxes.forEach(cb => {
+        if (cb.checked) score++;
+      });
+      totalScoreEl.textContent = score + " / 10";
+
+      let level = "Төмен";
+      let badgeBg = "#ff80ab";
+      if (score >= 9) {
+        level = "Жоғары";
+        badgeBg = "#aeea00";
+      } else if (score >= 5) {
+        level = "Орта";
+        badgeBg = "#ffeb3b";
+      }
+      levelBadge.textContent = level;
+      levelBadge.style.background = badgeBg;
+      return score;
+    }
+
+    checkboxes.forEach(cb => cb.addEventListener('change', updateScore));
+
+    document.getElementById('studentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      const statusMsg = document.getElementById('statusMsg');
+
+      const name = document.getElementById('name').value.trim();
+      const studentClass = document.getElementById('studentClass').value.trim();
+      const selfScore = updateScore();
+      const level = levelBadge.textContent;
+      const reflection1 = document.getElementById('reflection1').value.trim();
+      const reflection2 = document.getElementById('reflection2').value.trim();
+
+      const descriptors = Array.from(checkboxes).map(cb => cb.checked ? 1 : 0);
+
+      const payload = {
+        action: "submitStudent",
+        name,
+        studentClass,
+        descriptors,
+        selfScore,
+        level,
+        reflection1,
+        reflection2
+      };
+
+      btn.disabled = true;
+      btn.textContent = "Жіберілуде...";
+      statusMsg.textContent = "";
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload)
+        });
+
+        statusMsg.style.color = "green";
+        statusMsg.textContent = "Жіберілді ✔";
+        document.getElementById('studentForm').reset();
+        updateScore();
+        setTimeout(() => { statusMsg.textContent = ""; }, 4000);
+      } catch (err) {
+        statusMsg.style.color = "red";
+        statusMsg.textContent = "Қате орын алды! Қайталап көріңіз.";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Мұғалімге жіберу 🚀";
+      }
+    });
+  </script>
+</body>
+</html>
