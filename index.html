@@ -1,360 +1,145 @@
-<!DOCTYPE html>
-<html lang="kk">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Оқушының бағалау парағы - Векторлық графика</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-color: #fff9e6;
-      --card-bg: #ffffff;
-      --text-color: #111111;
-      --border-color: #000000;
-      --primary: #ffeb3b;
-      --secondary: #4fc3f7;
-      --accent: #ff80ab;
-      --green: #aeea00;
-      --shadow: 4px 4px 0px #000000;
-    }
+const TEACHER_PASSWORD = "infonet6"; // Мұғалім құпиясөзі (өзгертуге болады)
+const SHEET_NAME = "Нәтижелер";
+const HEADERS = [
+  "Уақыты", "Аты-жөні", "Сыныбы", "Дескрипторлар",
+  "Өзін-өзі бағалау", "Деңгей", "Бүгінгі жетістігім",
+  "Даму қадамым", "Мұғалім балы", "Мұғалім пікірі"
+];
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg-color: #1a1a1a;
-        --card-bg: #2d2d2d;
-        --text-color: #f0f0f0;
-        --border-color: #ffffff;
-        --primary: #fbc02d;
-        --secondary: #0288d1;
-        --accent: #c2185b;
-        --green: #689f38;
-        --shadow: 4px 4px 0px #ffffff;
+function json_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Кестеге формула ретінде орындалып кетпеуі үшін (=, +, -, @ деп басталса)
+function clean_(v) {
+  if (v === null || v === undefined) return "";
+  v = String(v).slice(0, 1000);
+  return /^[=+\-@]/.test(v) ? "'" + v : v;
+}
+
+function cleanScore_(v) {
+  if (v === "" || v === null || v === undefined) return "";
+  const n = Number(v);
+  if (isNaN(n)) return "";
+  return Math.max(0, Math.min(10, n));
+}
+
+function getSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SHEET_NAME);
+    sheet.appendRow(HEADERS);
+  }
+  return sheet;
+}
+
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(15000); // бір уақытта көп оқушы жіберсе, жолдар араласпайды
+
+    const data = JSON.parse(e.postData.contents);
+    const sheet = getSheet_();
+
+    // 1. Оқушы дерегін сақтау
+    if (data.action === "submitStudent") {
+      const name = clean_(data.name).trim();
+      const studentClass = clean_(data.studentClass).trim();
+      if (!name || !studentClass) {
+        return json_({ status: "error", message: "Аты-жөні мен сыныбын толтырыңыз!" });
       }
-    }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Noto Sans', sans-serif;
-    }
+      // Баллды клиенттен емес, дескрипторлардан сервер өзі есептейді
+      let descriptors = Array.isArray(data.descriptors) ? data.descriptors.slice(0, 10) : [];
+      descriptors = descriptors.map(function (d) { return d ? 1 : 0; });
+      const selfScore = descriptors.reduce(function (a, b) { return a + b; }, 0);
+      const level = selfScore >= 9 ? "Жоғары" : (selfScore >= 5 ? "Орта" : "Төмен");
 
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .container {
-      max-width: 700px;
-      width: 100%;
-      background: var(--card-bg);
-      border: 3px solid var(--border-color);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      padding: 24px;
-      margin-bottom: 40px;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      border-bottom: 3px solid var(--border-color);
-      padding-bottom: 15px;
-      margin-bottom: 20px;
-    }
-
-    .mascot {
-      font-size: 40px;
-      background: var(--primary);
-      border: 2px solid var(--border-color);
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 2px 2px 0px var(--border-color);
-    }
-
-    h1 {
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    p.subtitle {
-      font-size: 14px;
-      opacity: 0.8;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    input[type="text"], textarea {
-      width: 100%;
-      padding: 10px 14px;
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
-      background: var(--card-bg);
-      color: var(--text-color);
-      font-size: 15px;
-      box-shadow: 2px 2px 0px var(--border-color);
-    }
-
-    textarea {
-      resize: vertical;
-      height: 80px;
-    }
-
-    .criteria-section {
-      margin-top: 20px;
-    }
-
-    .category-title {
-      background: var(--secondary);
-      color: #000;
-      padding: 8px 12px;
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
-      font-weight: 700;
-      margin-top: 15px;
-      margin-bottom: 10px;
-      box-shadow: 2px 2px 0px var(--border-color);
-    }
-
-    .checkbox-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 10px;
-      background: rgba(0,0,0,0.02);
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px dashed var(--border-color);
-    }
-
-    .checkbox-item input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      accent-color: var(--accent);
-      cursor: pointer;
-      margin-top: 2px;
-    }
-
-    .score-board {
-      background: var(--primary);
-      color: #000;
-      border: 3px solid var(--border-color);
-      border-radius: 12px;
-      padding: 15px;
-      margin-top: 20px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      box-shadow: var(--shadow);
-    }
-
-    .score-val {
-      font-size: 28px;
-      font-weight: 700;
-    }
-
-    .badge {
-      padding: 6px 12px;
-      border: 2px solid #000;
-      border-radius: 20px;
-      font-weight: 700;
-      background: #fff;
-      color: #000;
-    }
-
-    .btn {
-      width: 100%;
-      background: var(--green);
-      color: #000;
-      border: 3px solid var(--border-color);
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 18px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-      margin-top: 20px;
-      transition: transform 0.1s ease, box-shadow 0.1s ease;
-    }
-
-    .btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0px var(--border-color);
-    }
-
-    .status-msg {
-      text-align: center;
-      margin-top: 12px;
-      font-weight: 700;
-      font-size: 16px;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <div class="header">
-      <div class="mascot">🖱️</div>
-      <div>
-        <h1>Бағалау критерийлері парағы</h1>
-        <p class="subtitle">ОМ: 6.2.2.1 | Тақырып: «Векторлық графикалық редактор»</p>
-      </div>
-    </div>
-
-    <form id="studentForm">
-      <div class="form-group">
-        <label for="name">Аты-жөніңіз:</label>
-        <input type="text" id="name" required placeholder="Мысалы: Әлижан Серікұлы">
-      </div>
-
-      <div class="form-group">
-        <label for="studentClass">Сыныбыңыз:</label>
-        <input type="text" id="studentClass" required placeholder="Мысалы: 6 «А»">
-      </div>
-
-      <div class="criteria-section">
-        <div class="category-title">1. Жұптық жұмыс «Дизайн студиясына тапсырыс»</div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c1"><label for="c1">Мектеп логотипіне тиімді графика түрін таңдайды</label></div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c2"><label for="c2">Табиғат фотосуретіне тиімді графика түрін таңдайды</label></div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c3"><label for="c3">Қауіпсіздік белгісіне тиімді графика түрін таңдайды</label></div>
-
-        <div class="category-title">2. Жеке жұмыс, 1-тапсырма</div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c4"><label for="c4">Төрт тұжырымның дұрыс немесе қате екенін анықтайды</label></div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c5"><label for="c5">Қате тұжырымдардың бірін дұрыс түзетеді</label></div>
-
-        <div class="category-title">3. Жеке жұмыс, 2-тапсырма</div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c6"><label for="c6">Логотип пен фотосуретке тиімді графика түрін таңдап, себебін түсіндіреді</label></div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c7"><label for="c7">Кейіпкерлердің жұмысындағы әділдік пен жауапкершіліктің көрінісін анықтайды</label></div>
-
-        <div class="category-title">4. Жеке жұмыс, 3-тапсырма</div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c8"><label for="c8">Кемінде 3 пішін мен 2–3 түсті қолданып, логотип эскизін жасайды</label></div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c9"><label for="c9">Векторлық графиканы таңдау себебін түсіндіреді</label></div>
-
-        <div class="category-title">5. Бекіту «Дұрыс–бұрыс»</div>
-        <div class="checkbox-item"><input type="checkbox" value="1" id="c10"><label for="c10">Дұрыс жауап беріп, қысқаша дәлел келтіреді</label></div>
-      </div>
-
-      <div class="score-board">
-        <div>
-          <div>Жиынтық балл:</div>
-          <div class="score-val" id="totalScore">0 / 10</div>
-        </div>
-        <div>
-          <div>Деңгей:</div>
-          <div class="badge" id="levelBadge">Төмен</div>
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-top: 20px;">
-        <label for="reflection1">Бүгінгі жетістігім:</label>
-        <textarea id="reflection1" placeholder="Бүгін не үйрендім, не сәтті шықты?"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="reflection2">Даму қадамым:</label>
-        <textarea id="reflection2" placeholder="Қандай қиындықтар туындады, нені жетілдіру керек?"></textarea>
-      </div>
-
-      <button type="submit" class="btn" id="submitBtn">Мұғалімге жіберу 🚀</button>
-      <div class="status-msg" id="statusMsg"></div>
-    </form>
-  </div>
-
-  <script>
-    const SCRIPT_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnSIcP3XQNRTA12ClcHXMG58AhLzx1mHZdWuSz4otwUvXZfXUb9Tibczppy0rgI0_KFEIEslYGKrDlRbv5GJVKq2VHITBs5V9NiM-AQeGc7ee8TF46uKWQV8TFfarLJYvmUqxio_QzT7kXBeqsDVaEbtea4lBaB5z9rtizrkJrQbJtbL6pmtj6fi6iwE3aspV3N9Vc3xkOCEPCmaTudU5XlHkD70fQ0a1KLph-SvZXzKyUj0XSgS-o2eAmR5ppaUFBPghpYzbla4aJsoTMbvAsY7EiWBVA&lib=Mc2XGr6zN0lH5dCUEAxGY9dtP1_2OzYrq"; // Өз Google Apps Script веб-сілтемеңізді жазыңыз
-
-    const checkboxes = document.querySelectorAll('.checkbox-item input[type="checkbox"]');
-    const totalScoreEl = document.getElementById('totalScore');
-    const levelBadge = document.getElementById('levelBadge');
-
-    function updateScore() {
-      let score = 0;
-      checkboxes.forEach(cb => {
-        if (cb.checked) score++;
-      });
-      totalScoreEl.textContent = score + " / 10";
-
-      let level = "Төмен";
-      let badgeBg = "#ff80ab";
-      if (score >= 9) {
-        level = "Жоғары";
-        badgeBg = "#aeea00";
-      } else if (score >= 5) {
-        level = "Орта";
-        badgeBg = "#ffeb3b";
-      }
-      levelBadge.textContent = level;
-      levelBadge.style.background = badgeBg;
-      return score;
-    }
-
-    checkboxes.forEach(cb => cb.addEventListener('change', updateScore));
-
-    document.getElementById('studentForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submitBtn');
-      const statusMsg = document.getElementById('statusMsg');
-
-      const name = document.getElementById('name').value.trim();
-      const studentClass = document.getElementById('studentClass').value.trim();
-      const selfScore = updateScore();
-      const level = levelBadge.textContent;
-      const reflection1 = document.getElementById('reflection1').value.trim();
-      const reflection2 = document.getElementById('reflection2').value.trim();
-
-      const descriptors = Array.from(checkboxes).map(cb => cb.checked ? 1 : 0);
-
-      const payload = {
-        action: "submitStudent",
+      sheet.appendRow([
+        new Date().toLocaleString("kk-KZ"),
         name,
         studentClass,
-        descriptors,
+        JSON.stringify(descriptors),
         selfScore,
         level,
-        reflection1,
-        reflection2
-      };
+        clean_(data.reflection1),
+        clean_(data.reflection2),
+        "",
+        ""
+      ]);
+      return json_({ status: "success" });
+    }
 
-      btn.disabled = true;
-      btn.textContent = "Жіберілуде...";
-      statusMsg.textContent = "";
-
-      try {
-        await fetch(SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(payload)
-        });
-
-        statusMsg.style.color = "green";
-        statusMsg.textContent = "Жіберілді ✔";
-        document.getElementById('studentForm').reset();
-        updateScore();
-        setTimeout(() => { statusMsg.textContent = ""; }, 4000);
-      } catch (err) {
-        statusMsg.style.color = "red";
-        statusMsg.textContent = "Қате орын алды! Қайталап көріңіз.";
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Мұғалімге жіберу 🚀";
+    // 2. Мұғалімнің кіруі және деректерді алуы
+    if (data.action === "teacherLogin") {
+      if (data.password !== TEACHER_PASSWORD) {
+        return json_({ status: "error", message: "Құпиясөз қате!" });
       }
-    });
-  </script>
-</body>
-</html>
+      const rows = sheet.getDataRange().getValues();
+      rows.shift(); // тақырыпты алып тастау
+      const students = rows.map(function (row, index) {
+        return {
+          rowIndex: index + 2,
+          timestamp: row[0],
+          name: row[1],
+          studentClass: row[2],
+          descriptors: row[3],
+          selfScore: row[4],
+          level: row[5],
+          reflection1: row[6],
+          reflection2: row[7],
+          teacherScore: row[8],
+          teacherFeedback: row[9]
+        };
+      });
+      return json_({ status: "success", students: students });
+    }
+
+    // 3. Мұғалім бағасы мен пікірін жаңарту
+    if (data.action === "updateScore") {
+      if (data.password !== TEACHER_PASSWORD) {
+        return json_({ status: "error", message: "Құпиясөз қате!" });
+      }
+      const rowIndex = Number(data.rowIndex);
+      if (!Number.isInteger(rowIndex) || rowIndex < 2 || rowIndex > sheet.getLastRow()) {
+        return json_({ status: "error", message: "Жол нөмірі қате!" });
+      }
+      sheet.getRange(rowIndex, 9).setValue(cleanScore_(data.teacherScore));
+      sheet.getRange(rowIndex, 10).setValue(clean_(data.teacherFeedback));
+      return json_({ status: "success" });
+    }
+
+    // 4. Оқушыны қолмен қосу
+    if (data.action === "addStudent") {
+      if (data.password !== TEACHER_PASSWORD) {
+        return json_({ status: "error", message: "Құпиясөз қате!" });
+      }
+      sheet.appendRow([
+        new Date().toLocaleString("kk-KZ"),
+        clean_(data.name),
+        clean_(data.studentClass),
+        "[]",
+        0,
+        "Төмен",
+        "",
+        "",
+        cleanScore_(data.teacherScore),
+        clean_(data.teacherFeedback)
+      ]);
+      return json_({ status: "success" });
+    }
+
+    return json_({ status: "error", message: "Белгісіз әрекет" });
+
+  } catch (err) {
+    return json_({ status: "error", message: err.toString() });
+  } finally {
+    try { lock.releaseLock(); } catch (e2) {}
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput("Информатика бағалау жүйесінің бэкенді сәтті жұмыс істеп тұр!");
+}
